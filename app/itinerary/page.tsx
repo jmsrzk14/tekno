@@ -3,6 +3,7 @@
 import React from 'react';
 import { MapPin, Users, Star, Mountain } from 'lucide-react';
 import { Itinerary } from '@/types';
+import Link from 'next/link';
 
 const itineraries: Itinerary[] = [
   {
@@ -112,9 +113,11 @@ export default function ItineraryPage() {
                     </div>
                   </div>
 
-                  <button className="w-full bg-emerald-600 text-white py-3 rounded-xl font-semibold hover:bg-emerald-700 transition">
-                    Gunakan Template
-                  </button>
+                  <Link href={`/itinerary/${item.id}`}>
+                    <button className="w-full bg-emerald-600 text-white py-3 rounded-xl font-semibold hover:bg-emerald-700 transition">
+                      Gunakan Template
+                    </button>
+                  </Link>
                 </div>
               </div>
             ))}

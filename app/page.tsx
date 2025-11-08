@@ -61,7 +61,7 @@ export default function HomePage() {
           <div className="absolute top-40 right-10 w-72 h-72 bg-emerald-400 rounded-full mix-blend-multiply filter blur-xl opacity-50 animate-blob animation-delay-2000"></div>
           <div className="absolute bottom-20 left-1/2 w-72 h-72 bg-teal-400 rounded-full mix-blend-multiply filter blur-xl opacity-50 animate-blob animation-delay-4000"></div>
         </div>
-        
+
         <div className="relative z-10 text-center px-4 max-w-5xl">
           <div className="flex justify-center mb-6">
             <Leaf className="w-16 h-16 text-green-300 animate-pulse" />
@@ -72,7 +72,7 @@ export default function HomePage() {
           <p className="text-xl md:text-2xl text-gray-100 mb-12 max-w-3xl mx-auto">
             Itinerary otomatis, rekomendasi personal, dan petualangan alam yang tak terlupakan
           </p>
-          
+
           {/* Search Bar */}
           <div className="max-w-3xl mx-auto bg-white rounded-full p-2 shadow-2xl flex items-center">
             <input
@@ -113,7 +113,7 @@ export default function HomePage() {
             <h2 className="text-4xl font-bold text-gray-900 mb-4">Fitur Unggulan</h2>
             <p className="text-xl text-gray-600">Teknologi AI untuk pengalaman perjalanan terbaik</p>
           </div>
-          
+
           <div className="grid md:grid-cols-3 gap-8">
             <div className="bg-gradient-to-br from-emerald-50 to-green-100 p-8 rounded-2xl hover:shadow-xl transition transform hover:-translate-y-2 border border-emerald-200">
               <div className="bg-emerald-600 w-16 h-16 rounded-full flex items-center justify-center mb-6">
@@ -185,9 +185,11 @@ export default function HomePage() {
                   <div className="text-sm text-gray-500 mb-4">
                     {dest.reviews.toLocaleString()} reviews
                   </div>
-                  <button className="w-full bg-gradient-to-r from-emerald-600 to-teal-600 text-white py-3 rounded-xl font-semibold hover:shadow-lg transition">
-                    Lihat Detail
-                  </button>
+                  <Link href={`/destinations/${dest.id}`}>
+                    <button className="w-full bg-gradient-to-r from-emerald-600 to-teal-600 text-white py-3 rounded-xl font-semibold hover:shadow-lg transition">
+                      Lihat Detail
+                    </button>
+                  </Link>
                 </div>
               </div>
             ))}

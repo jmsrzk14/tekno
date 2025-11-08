@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { Star, Clock } from 'lucide-react';
 import { Destination } from '@/types';
+import Link from 'next/link';
 
 const destinations: Destination[] = [
   {
@@ -84,11 +85,10 @@ export default function DestinationsPage() {
             <button
               key={f}
               onClick={() => setFilter(f)}
-              className={`px-6 py-3 rounded-full font-semibold transition ${
-                filter === f
+              className={`px-6 py-3 rounded-full font-semibold transition ${filter === f
                   ? 'bg-emerald-600 text-white shadow-lg'
                   : 'bg-white text-gray-700 hover:bg-green-50 border border-green-200'
-              }`}
+                }`}
             >
               {f === 'all' ? 'Semua' : f === 'asia' ? 'Asia' : f === 'europe' ? 'Eropa' : f === 'local' ? 'Lokal' : 'Budget Friendly'}
             </button>
@@ -127,9 +127,11 @@ export default function DestinationsPage() {
                     <div className="font-semibold text-gray-900">{dest.duration}</div>
                   </div>
                 </div>
-                <button className="w-full bg-gradient-to-r from-emerald-600 to-teal-600 text-white py-3 rounded-xl font-semibold hover:shadow-lg transition">
-                  Rencanakan Trip
-                </button>
+                <Link href={`/destinations/${dest.id}`}>
+                  <button className="w-full bg-gradient-to-r from-emerald-600 to-teal-600 text-white py-3 rounded-xl font-semibold hover:shadow-lg transition">
+                    Rencanakan Trip
+                  </button>
+                </Link>
               </div>
             </div>
           ))}

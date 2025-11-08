@@ -55,3 +55,29 @@ export interface MenuItem {
   label: string;
   icon: any;
 }
+
+export interface Package {
+  id: string;
+  name: string;
+  price: number;
+  duration: string;
+  features: string[];
+  popular?: boolean;
+}
+
+export interface ItineraryDay {
+  day: number;
+  title: string;
+  activities: Activity[];
+}
+
+export interface Activity {
+  time: string;
+  activity: string;
+  icon: any;
+}
+
+export interface TravelTip {
+  category: string;
+  tips: string[];
+}

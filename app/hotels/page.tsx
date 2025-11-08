@@ -3,6 +3,7 @@
 import React from 'react';
 import { Hotel as HotelIcon, MapPin, Star } from 'lucide-react';
 import { Hotel } from '@/types';
+import Link from 'next/link';
 
 const hotels: Hotel[] = [
   {
@@ -120,12 +121,16 @@ export default function HotelsPage() {
                 </div>
 
                 <div className="flex gap-4">
-                  <button className="flex-1 bg-emerald-600 text-white py-3 rounded-xl font-semibold hover:bg-emerald-700 transition">
-                    Lihat Detail
-                  </button>
-                  <button className="flex-1 bg-gradient-to-r from-emerald-600 to-teal-600 text-white py-3 rounded-xl font-semibold hover:shadow-lg transition">
-                    Pesan Sekarang
-                  </button>
+                  <Link href={`/hotels/${hotel.id}`}>
+                    <button className="flex-1 bg-emerald-600 text-white py-3 rounded-xl font-semibold hover:bg-emerald-700 transition">
+                      Lihat Detail
+                    </button>
+                  </Link>
+                  <Link href={`/hotels/${hotel.id}`}>
+                    <button className="flex-1 bg-gradient-to-r from-emerald-600 to-teal-600 text-white py-3 rounded-xl font-semibold hover:shadow-lg transition">
+                      Pesan Sekarang
+                    </button>
+                  </Link>  
                 </div>
               </div>
             </div>
