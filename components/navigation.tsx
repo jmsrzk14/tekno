@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Trees, Calendar, Mountain, Utensils, Hotel, Plane, Star, Menu, X, Leaf } from 'lucide-react';
+import { Trees, Calendar, Mountain, Utensils, Hotel, Plane, Star, Menu, X, Leaf, Users, Crown } from 'lucide-react';
 import { MenuItem } from '@/types';
 
 export default function Navigation() {
@@ -17,6 +17,7 @@ export default function Navigation() {
     { id: '/cuisine', label: 'Kuliner', icon: Utensils },
     { id: '/hotels', label: 'Hotel', icon: Hotel },
     { id: '/transportation', label: 'Transportasi', icon: Plane },
+    { id: '/premium', label: 'Premium', icon: Crown },
     { id: '/reviews', label: 'Review', icon: Star }
   ];
 
