@@ -3,6 +3,7 @@
 import React from 'react';
 import { MessageCircle, Award, Heart, Users, Star, MapPin } from 'lucide-react';
 import { Review } from '@/types';
+import Link from 'next/link';
 
 const reviews: Review[] = [
   {
@@ -144,9 +145,11 @@ export default function ReviewsPage() {
 
         {/* Write Review Button */}
         <div className="mt-12 text-center">
-          <button className="bg-gradient-to-r from-emerald-600 to-teal-600 text-white px-8 py-4 rounded-xl font-bold text-lg hover:shadow-2xl transition transform hover:scale-105">
-            Tulis Review
-          </button>
+          <Link href={`/reviews/create`}>
+            <button className="bg-gradient-to-r from-emerald-600 to-teal-600 text-white px-8 py-4 rounded-xl font-bold text-lg hover:shadow-2xl transition transform hover:scale-105">
+              Tulis Review
+            </button>
+          </Link>
         </div>
       </div>
     </div>
