@@ -1,9 +1,14 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { CreditCard, Lock, CheckCircle, ArrowRight, Calendar, Users, MapPin } from 'lucide-react';
 
 export default function BookingPage() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  
+  // Get step from URL, default to 1
   const [step, setStep] = useState(1);
   const [bookingData, setBookingData] = useState({
     name: '',
@@ -24,6 +29,26 @@ export default function BookingPage() {
     price: 8500000,
     tax: 850000,
     total: 9350000
+  };
+
+  // Sync step with URL on mount and when searchParams change
+  useEffect(() => {
+    const stepFromUrl = searchParams.get('step');
+    if (stepFromUrl) {
+      const stepNumber = parseInt(stepFromUrl);
+      if (stepNumber >= 1 && stepNumber <= 3) {
+        setStep(stepNumber);
+      }
+    } else {
+      // If no step in URL, set it to 1
+      router.push('/booking?step=1', { scroll: false });
+    }
+  }, [searchParams, router]);
+
+  // Function to change step and update URL
+  const changeStep = (newStep: number) => {
+    setStep(newStep);
+    router.push(`/booking?step=${newStep}`, { scroll: false });
   };
 
   return (
@@ -47,13 +72,17 @@ export default function BookingPage() {
                 ].map((s, index) => (
                   <div key={s.num} className="flex items-center">
                     <div className="flex items-center gap-3">
-                      <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold ${
-                        step >= s.num 
-                          ? 'bg-emerald-600 text-white' 
-                          : 'bg-gray-200 text-gray-500'
-                      }`}>
+                      <button
+                        onClick={() => s.num < step && changeStep(s.num)}
+                        disabled={s.num >= step}
+                        className={`w-10 h-10 rounded-full flex items-center justify-center font-bold transition ${
+                          step >= s.num 
+                            ? 'bg-emerald-600 text-white' 
+                            : 'bg-gray-200 text-gray-500'
+                        } ${s.num < step ? 'cursor-pointer hover:bg-emerald-700' : 'cursor-default'}`}
+                      >
                         {step > s.num ? <CheckCircle className="w-6 h-6" /> : s.num}
-                      </div>
+                      </button>
                       <span className={`font-semibold ${step >= s.num ? 'text-emerald-600' : 'text-gray-500'}`}>
                         {s.label}
                       </span>
@@ -131,7 +160,7 @@ export default function BookingPage() {
                 </div>
 
                 <button
-                  onClick={() => setStep(2)}
+                  onClick={() => changeStep(2)}
                   className="mt-8 w-full bg-gradient-to-r from-emerald-600 to-teal-600 text-white py-4 rounded-xl font-bold text-lg hover:shadow-lg transition flex items-center justify-center gap-2"
                 >
                   Continue to Payment
@@ -215,13 +244,13 @@ export default function BookingPage() {
 
                 <div className="flex gap-4 mt-8">
                   <button
-                    onClick={() => setStep(1)}
+                    onClick={() => changeStep(1)}
                     className="flex-1 bg-gray-100 text-gray-700 py-4 rounded-xl font-bold text-lg hover:bg-gray-200 transition"
                   >
                     Back
                   </button>
                   <button
-                    onClick={() => setStep(3)}
+                    onClick={() => changeStep(3)}
                     className="flex-1 bg-gradient-to-r from-emerald-600 to-teal-600 text-white py-4 rounded-xl font-bold text-lg hover:shadow-lg transition flex items-center justify-center gap-2"
                   >
                     Complete Booking
@@ -256,7 +285,10 @@ export default function BookingPage() {
                 </div>
 
                 <div className="flex flex-col sm:flex-row gap-4">
-                  <button className="flex-1 bg-gradient-to-r from-emerald-600 to-teal-600 text-white py-4 rounded-xl font-bold text-lg hover:shadow-lg transition">
+                  <button 
+                    onClick={() => router.push('/profile')}
+                    className="flex-1 bg-gradient-to-r from-emerald-600 to-teal-600 text-white py-4 rounded-xl font-bold text-lg hover:shadow-lg transition"
+                  >
                     View Booking Details
                   </button>
                   <button className="flex-1 bg-gray-100 text-gray-700 py-4 rounded-xl font-bold text-lg hover:bg-gray-200 transition">
@@ -311,6 +343,20 @@ export default function BookingPage() {
                 <p className="text-sm text-emerald-900">
                   <span className="font-semibold">Special Offer:</span> Get 10% cashback for your next booking!
                 </p>
+              </div>
+
+              {/* Progress Indicator */}
+              <div className="mt-6 bg-gray-50 border border-gray-200 rounded-xl p-4">
+                <div className="flex items-center justify-between text-sm text-gray-600 mb-2">
+                  <span>Progress</span>
+                  <span className="font-semibold text-emerald-600">Step {step} of 3</span>
+                </div>
+                <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
+                  <div 
+                    className="h-full bg-gradient-to-r from-emerald-600 to-teal-600 transition-all duration-500"
+                    style={{ width: `${(step / 3) * 100}%` }}
+                  />
+                </div>
               </div>
             </div>
           </div>
