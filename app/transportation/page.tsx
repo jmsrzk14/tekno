@@ -43,7 +43,7 @@ const transportTypes: TransportType[] = [
 export default function TransportationPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  
+
   const [selectedType, setSelectedType] = useState<string>('bus');
   const [showResults, setShowResults] = useState(false);
   const [searchData, setSearchData] = useState({
@@ -251,7 +251,7 @@ export default function TransportationPage() {
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     // Check if selected type is available
     if (selectedType !== 'bus' && selectedType !== 'car') {
       alert('Maaf, layanan ini akan segera hadir! Saat ini hanya tersedia Bus dan Rental Mobil.');
@@ -310,33 +310,30 @@ export default function TransportationPage() {
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
           {transportTypes.map((type, index) => {
             const isAvailable = type.value === 'bus' || type.value === 'car';
-            
+
             return (
               <button
                 key={index}
                 onClick={() => handleTypeSelect(type.value)}
                 disabled={!isAvailable}
-                className={`bg-white rounded-2xl p-8 text-center shadow-lg transition transform cursor-pointer border-2 relative ${
-                  selectedType === type.value
+                className={`bg-white rounded-2xl p-8 text-center shadow-lg transition transform cursor-pointer border-2 relative ${selectedType === type.value
                     ? 'border-emerald-600 bg-emerald-50 -translate-y-2'
                     : isAvailable
-                    ? 'border-green-100 hover:shadow-2xl hover:-translate-y-2'
-                    : 'border-gray-200 opacity-50 cursor-not-allowed'
-                }`}
+                      ? 'border-green-100 hover:shadow-2xl hover:-translate-y-2'
+                      : 'border-gray-200 opacity-50 cursor-not-allowed'
+                  }`}
               >
                 {!isAvailable && (
                   <div className="absolute top-4 right-4 bg-amber-500 text-white px-3 py-1 rounded-full text-xs font-bold">
                     Coming Soon
                   </div>
                 )}
-                <div className={`w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4 ${
-                  selectedType === type.value
+                <div className={`w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4 ${selectedType === type.value
                     ? 'bg-gradient-to-br from-emerald-500 to-teal-600'
                     : 'bg-gradient-to-br from-green-100 to-teal-100'
-                }`}>
-                  <type.icon className={`w-10 h-10 ${
-                    selectedType === type.value ? 'text-white' : 'text-emerald-600'
-                  }`} />
+                  }`}>
+                  <type.icon className={`w-10 h-10 ${selectedType === type.value ? 'text-white' : 'text-emerald-600'
+                    }`} />
                 </div>
                 <h3 className="text-xl font-bold text-gray-900 mb-2">{type.name}</h3>
                 <p className="text-gray-600 text-sm">{type.description}</p>
@@ -418,7 +415,7 @@ export default function TransportationPage() {
                 </div>
               )}
             </div>
-            <button 
+            <button
               type="submit"
               className="w-full bg-gradient-to-r from-emerald-600 to-teal-600 text-white py-4 rounded-xl font-bold text-lg hover:shadow-2xl transition"
             >
@@ -434,11 +431,11 @@ export default function TransportationPage() {
               <div>
                 <h2 className="text-3xl font-bold text-gray-900 mb-2">Hasil Pencarian</h2>
                 <p className="text-gray-600">
-                  Ditemukan {currentResults.length} pilihan {selectedType === 'car' ? 'mobil' : 'bus'} 
+                  Ditemukan {currentResults.length} pilihan {selectedType === 'car' ? 'mobil' : 'bus'}
                   {selectedType !== 'car' && ` dari ${searchData.from || 'Jakarta'} ke ${searchData.to || 'Bandung'}`}
                 </p>
               </div>
-              <button 
+              <button
                 onClick={handleResetSearch}
                 className="text-emerald-600 font-semibold hover:text-emerald-700"
               >
@@ -463,7 +460,7 @@ export default function TransportationPage() {
             <div className="space-y-4">
               {currentResults.map((result) => {
                 const TypeIcon = getTypeIcon(result.type);
-                
+
                 return (
                   <div key={result.id} className="bg-white rounded-2xl p-6 shadow-lg hover:shadow-xl transition border border-green-100">
                     {selectedType === 'car' ? (
@@ -526,7 +523,9 @@ export default function TransportationPage() {
                             <div className="text-xs text-gray-500">per hari</div>
                           </div>
 
-                          <button className="w-full bg-gradient-to-r from-emerald-600 to-teal-600 text-white py-3 rounded-xl font-semibold hover:shadow-lg transition flex items-center justify-center gap-2">
+                          <button
+                            onClick={() => router.push("/transportation/booking")}
+                            className="w-full bg-gradient-to-r from-emerald-600 to-teal-600 text-white py-3 rounded-xl font-semibold hover:shadow-lg transition flex items-center justify-center gap-2">
                             Sewa Sekarang
                             <ArrowRight className="w-4 h-4" />
                           </button>
@@ -602,7 +601,7 @@ export default function TransportationPage() {
                             </div>
                             <div className="text-xs text-gray-500">per orang</div>
                           </div>
-                          
+
                           <div className="flex items-center justify-center md:justify-end gap-2 text-sm text-gray-600 mb-4">
                             <Users className="w-4 h-4" />
                             <span>{result.seats} kursi tersisa</span>

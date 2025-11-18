@@ -1,20 +1,7 @@
 "use client";
 
-import React, { useState } from "react";
-import {
-  MapPin,
-  Users,
-  Star,
-  Mountain,
-  Calendar,
-  DollarSign,
-  Search,
-  Clock,
-  Utensils,
-  Hotel,
-  Camera,
-} from "lucide-react";
-import Link from 'next/link';
+import React, { useState } from 'react';
+import { MapPin, Users, Star, Mountain, Calendar, DollarSign, Search, Clock, Utensils, Hotel, Camera } from 'lucide-react';
 
 interface Activity {
   time: string;
@@ -39,13 +26,14 @@ interface Itinerary {
   activities: number;
   description: string;
   dailyPlan: DayPlan[];
+  detailUrl: string;
   includes: string[];
 }
 
 export default function ItineraryPage() {
-  const [days, setDays] = useState<string>("");
-  const [budget, setBudget] = useState<string>("");
-  const [people, setPeople] = useState<string>("");
+  const [days, setDays] = useState<string>('');
+  const [budget, setBudget] = useState<string>('');
+  const [people, setPeople] = useState<string>('');
   const [searchResults, setSearchResults] = useState<Itinerary[]>([]);
   const [isSearching, setIsSearching] = useState<boolean>(false);
 
@@ -65,15 +53,31 @@ export default function ItineraryPage() {
     ],
   };
 
-  // ⚙️ Fungsi generate itinerary
+  // Update URL saat pencarian dilakukan
+  const updateSearchURL = (numDays: number, numBudget: number, numPeople: number): void => {
+    const params = new URLSearchParams();
+    params.set('days', numDays.toString());
+    params.set('budget', numBudget.toString());
+    params.set('people', numPeople.toString());
+    window.history.pushState({}, '', `/itinerary/search?${params.toString()}`);
+  };
+
+  // Fungsi generate itinerary
   const generateItinerary = (): void => {
+    if (!days || !budget || !people) {
+      return;
+    }
+
     setIsSearching(true);
+    
+    const numDays: number = parseInt(days);
+    const numBudget: number = parseInt(budget);
+    const numPeople: number = parseInt(people);
 
+    // Update URL dengan parameter pencarian
+    updateSearchURL(numDays, numBudget, numPeople);
+    
     setTimeout(() => {
-      const numDays = parseInt(days) || 3;
-      const numPeople = parseInt(people) || 2;
-      const totalBudget = parseInt(budget) || 1000000;
-
       const itineraries: Itinerary[] = [
         {
           id: 1,
@@ -81,19 +85,20 @@ export default function ItineraryPage() {
           destination: "Danau Toba",
           days: numDays,
           people: numPeople,
-          totalBudget,
+          totalBudget: numBudget,
           budgetLevel: "Ekonomis",
           rating: 4.8,
           activities: numDays * 3,
           description: "Paket hemat untuk menikmati keindahan Danau Toba",
-          dailyPlan: generateDailyPlan(numDays, "ekonomis", numPeople),
+          dailyPlan: generateDailyPlan(numDays, 'ekonomis', numPeople),
+          detailUrl: `/itinerary/detail/ekonomis?days=${numDays}&budget=${numBudget}&people=${numPeople}`,
           includes: [
             "Tiket masuk wisata",
             "Transportasi lokal",
             "Makan 3x sehari",
             "Hotel budget",
-            "Guide lokal",
-          ],
+            "Guide lokal"
+          ]
         },
         {
           id: 2,
@@ -101,20 +106,21 @@ export default function ItineraryPage() {
           destination: "Danau Toba",
           days: numDays,
           people: numPeople,
-          totalBudget: Math.round(totalBudget * 1.5),
+          totalBudget: Math.round(numBudget * 1.5),
           budgetLevel: "Standar",
           rating: 4.9,
           activities: numDays * 4,
           description: "Paket lengkap dengan akomodasi nyaman",
-          dailyPlan: generateDailyPlan(numDays, "standar", numPeople),
+          dailyPlan: generateDailyPlan(numDays, 'standar', numPeople),
+          detailUrl: `/itinerary/detail/standar?days=${numDays}&budget=${Math.round(numBudget * 1.5)}&people=${numPeople}`,
           includes: [
             "Tiket masuk wisata",
             "Transportasi AC",
             "Makan 3x sehari",
             "Hotel mid-range",
             "Guide profesional",
-            "Asuransi perjalanan",
-          ],
+            "Asuransi perjalanan"
+          ]
         },
         {
           id: 3,
@@ -122,12 +128,13 @@ export default function ItineraryPage() {
           destination: "Danau Toba",
           days: numDays,
           people: numPeople,
-          totalBudget: Math.round(totalBudget * 2),
+          totalBudget: Math.round(numBudget * 2),
           budgetLevel: "Premium",
           rating: 5.0,
           activities: numDays * 5,
           description: "Pengalaman mewah dengan fasilitas terbaik",
-          dailyPlan: generateDailyPlan(numDays, "premium", numPeople),
+          dailyPlan: generateDailyPlan(numDays, 'premium', numPeople),
+          detailUrl: `/itinerary/detail/premium?days=${numDays}&budget=${Math.round(numBudget * 2)}&people=${numPeople}`,
           includes: [
             "Tiket masuk semua wisata",
             "Private car + driver",
@@ -136,9 +143,9 @@ export default function ItineraryPage() {
             "Guide profesional",
             "Asuransi perjalanan",
             "Welcome dinner",
-            "Fotografi profesional",
-          ],
-        },
+            "Fotografi profesional"
+          ]
+        }
       ];
 
       setSearchResults(itineraries);
@@ -146,10 +153,9 @@ export default function ItineraryPage() {
     }, 1500);
   };
 
-  // 🧠 Fungsi generateDailyPlan
-  const generateDailyPlan = (numDays: number, level: string, people: number): DayPlan[] => {
+  // Fungsi generateDailyPlan
+  const generateDailyPlan = (numDays: number, level: string, peopleCount: number): DayPlan[] => {
     const plans: DayPlan[] = [];
-    const attractions = tobaAttractions.popular;
 
     for (let day = 1; day <= numDays; day++) {
       const dayPlan: DayPlan = { day, activities: [] };
@@ -179,6 +185,15 @@ export default function ItineraryPage() {
           { time: "14:00", activity: "Shopping oleh-oleh Ulos", icon: "camera" },
           { time: "16:00", activity: "Transfer ke bandara/stasiun", icon: "map" },
         ];
+      } else {
+        // Additional days
+        dayPlan.activities = [
+          { time: "08:00", activity: "Sarapan di hotel", icon: "utensils" },
+          { time: "09:30", activity: `Kunjungi destinasi wisata`, icon: "camera" },
+          { time: "13:00", activity: "Makan siang", icon: "utensils" },
+          { time: "15:00", activity: `Eksplorasi tempat baru`, icon: "mountain" },
+          { time: "18:00", activity: "Kembali ke hotel & istirahat", icon: "hotel" },
+        ];
       }
 
       plans.push(dayPlan);
@@ -187,7 +202,7 @@ export default function ItineraryPage() {
     return plans;
   };
 
-  const getIcon = (iconName: string) => {
+  const getIcon = (iconName: string): JSX.Element => {
     const icons: Record<string, JSX.Element> = {
       hotel: <Hotel className="w-4 h-4" />,
       camera: <Camera className="w-4 h-4" />,
@@ -356,7 +371,7 @@ export default function ItineraryPage() {
                     <div className="mb-6">
                       <div className="text-sm font-semibold text-gray-700 mb-3">Termasuk:</div>
                       <div className="space-y-2">
-                        {item.includes.slice(0, 4).map((inc, i) => (
+                        {item.includes.slice(0, 4).map((inc: string, i: number) => (
                           <div key={i} className="flex items-center gap-2 text-sm text-gray-600">
                             <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full"></div>
                             {inc}
@@ -376,7 +391,7 @@ export default function ItineraryPage() {
                         Contoh Hari Pertama:
                       </div>
                       <div className="space-y-2">
-                        {item.dailyPlan[0].activities.slice(0, 3).map((act, i) => (
+                        {item.dailyPlan[0].activities.slice(0, 3).map((act: Activity, i: number) => (
                           <div key={i} className="flex items-start gap-3 text-xs">
                             <div className="text-emerald-600 font-semibold w-12 flex-shrink-0">
                               {act.time}
@@ -394,11 +409,12 @@ export default function ItineraryPage() {
                         </div>
                       </div>
                     </div>
-                    <Link href={`/itinerary/${item.id}`}>
-                      <button className="w-full bg-gradient-to-r from-emerald-600 to-teal-600 text-white py-3 rounded-xl font-semibold hover:shadow-lg transition">
-                        Lihat Detail & Pesan
-                      </button>
-                    </Link>
+                    <button 
+                      onClick={() => window.location.href = item.detailUrl}
+                      className="w-full bg-gradient-to-r from-emerald-600 to-teal-600 text-white py-3 rounded-xl font-semibold hover:shadow-lg transition"
+                    >
+                      Lihat Detail & Pesan
+                    </button>
                   </div>
                 </div>
               ))}
