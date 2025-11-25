@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { MapPin, Users, Star, Mountain, Calendar, DollarSign, Search, Clock, Utensils, Hotel, Camera } from 'lucide-react';
 
 interface Activity {
@@ -37,6 +37,25 @@ export default function ItineraryPage() {
   const [searchResults, setSearchResults] = useState<Itinerary[]>([]);
   const [isSearching, setIsSearching] = useState<boolean>(false);
 
+  // Baca parameter dari URL saat halaman dimuat
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const urlDays = params.get('days');
+    const urlBudget = params.get('budget');
+    const urlPeople = params.get('people');
+
+    if (urlDays && urlBudget && urlPeople) {
+      setDays(urlDays);
+      setBudget(urlBudget);
+      setPeople(urlPeople);
+      
+      // Trigger pencarian otomatis
+      setTimeout(() => {
+        performSearch(parseInt(urlDays), parseInt(urlBudget), parseInt(urlPeople));
+      }, 100);
+    }
+  }, []);
+
   // Data pariwisata Danau Toba
   const tobaAttractions = {
     popular: [
@@ -59,24 +78,14 @@ export default function ItineraryPage() {
     params.set('days', numDays.toString());
     params.set('budget', numBudget.toString());
     params.set('people', numPeople.toString());
+    
     const newUrl = `${window.location.pathname}?${params.toString()}`;
     window.history.pushState({ days: numDays, budget: numBudget, people: numPeople }, '', newUrl);
   };
 
-  // Fungsi generate itinerary
-  const generateItinerary = (): void => {
-    if (!days || !budget || !people) {
-      return;
-    }
-
+  // Fungsi untuk melakukan pencarian
+  const performSearch = (numDays: number, numBudget: number, numPeople: number): void => {
     setIsSearching(true);
-    
-    const numDays: number = parseInt(days);
-    const numBudget: number = parseInt(budget);
-    const numPeople: number = parseInt(people);
-
-    // Update URL dengan parameter pencarian
-    updateSearchURL(numDays, numBudget, numPeople);
     
     setTimeout(() => {
       const itineraries: Itinerary[] = [
@@ -151,7 +160,32 @@ export default function ItineraryPage() {
 
       setSearchResults(itineraries);
       setIsSearching(false);
+      
+      // Scroll ke hasil pencarian
+      setTimeout(() => {
+        const resultsElement = document.getElementById('search-results');
+        if (resultsElement) {
+          resultsElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      }, 100);
     }, 1500);
+  };
+
+  // Fungsi generate itinerary
+  const generateItinerary = (): void => {
+    if (!days || !budget || !people) {
+      return;
+    }
+
+    const numDays: number = parseInt(days);
+    const numBudget: number = parseInt(budget);
+    const numPeople: number = parseInt(people);
+
+    // Update URL dengan parameter pencarian
+    updateSearchURL(numDays, numBudget, numPeople);
+    
+    // Lakukan pencarian
+    performSearch(numDays, numBudget, numPeople);
   };
 
   // Fungsi generateDailyPlan
@@ -311,7 +345,7 @@ export default function ItineraryPage() {
 
         {/* Search Results */}
         {searchResults.length > 0 && (
-          <div>
+          <div id="search-results">
             <h2 className="text-3xl font-bold text-gray-900 mb-8">
               Rekomendasi Itinerary Danau Toba untuk Anda
             </h2>
