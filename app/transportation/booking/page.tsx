@@ -8,16 +8,16 @@ export default function TransportBookingPage() {
   const [transportType] = useState('bus'); // 'bus' or 'car'
   const [bookingData, setBookingData] = useState({
     // Passenger Info
-    fullName: '',
-    email: '',
-    phone: '',
-    idNumber: '',
+    fullName: "",
+    email: "",
+    phone: "",
+    idNumber: "",
     // Booking Details
-    pickupLocation: '',
-    dropLocation: '',
-    specialRequest: '',
+    pickupLocation: "",
+    dropLocation: "",
+    specialRequest: "",
     // Payment
-    paymentMethod: ''
+    paymentMethod: ""
   });
   const [isProcessing, setIsProcessing] = useState(false);
   const [bookingComplete, setBookingComplete] = useState(false);
@@ -38,7 +38,7 @@ export default function TransportBookingPage() {
     facilities: ['AC', 'Reclining Seat', 'Charging Port']
   };
 
-  const handleInputChange = (field, value) => {
+  const handleInputChange = (field: string, value: string | number) => {
     setBookingData({ ...bookingData, [field]: value });
   };
 
@@ -69,7 +69,7 @@ export default function TransportBookingPage() {
     }, 2000);
   };
 
-  const formatCurrency = (amount) => {
+  const formatCurrency = (amount: number) => {
     return `Rp ${amount.toLocaleString()}`;
   };
 
