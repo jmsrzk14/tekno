@@ -59,7 +59,8 @@ export default function ItineraryPage() {
     params.set('days', numDays.toString());
     params.set('budget', numBudget.toString());
     params.set('people', numPeople.toString());
-    window.history.pushState({}, '', `/itinerary/search?${params.toString()}`);
+    const newUrl = `${window.location.pathname}?${params.toString()}`;
+    window.history.pushState({ days: numDays, budget: numBudget, people: numPeople }, '', newUrl);
   };
 
   // Fungsi generate itinerary
