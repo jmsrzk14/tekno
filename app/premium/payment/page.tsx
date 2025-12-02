@@ -1,9 +1,12 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { CreditCard, Wallet, Smartphone, ArrowLeft, ShieldCheck, CheckCircle } from "lucide-react";
 
 export default function PremiumPaymentPage() {
+  const router = useRouter();
+
   const [selectedMethod, setSelectedMethod] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
   const [success, setSuccess] = useState(false);
@@ -31,38 +34,24 @@ export default function PremiumPaymentPage() {
     if (!selectedMethod) return alert("Pilih metode pembayaran terlebih dahulu!");
 
     setIsProcessing(true);
+
     setTimeout(() => {
       setIsProcessing(false);
       setSuccess(true);
     }, 2000);
   };
 
-  if (success) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-green-50 to-white">
-        <div className="bg-white p-10 rounded-3xl shadow-2xl text-center max-w-md">
-          <div className="w-20 h-20 bg-gradient-to-br from-emerald-500 to-teal-500 rounded-full flex items-center justify-center mx-auto mb-6">
-            <CheckCircle className="w-10 h-10 text-white" />
-          </div>
-          <h2 className="text-3xl font-bold text-gray-900 mb-3">Pembayaran Berhasil!</h2>
-          <p className="text-gray-600 mb-6">
-            Selamat, akun Anda telah diupgrade ke <span className="font-semibold">Premium Plan</span>.
-            Nikmati semua fitur eksklusif mulai hari ini 🎉
-          </p>
-          <button
-            onClick={() => window.location.href = "/"}
-            className="bg-gradient-to-r from-emerald-600 to-teal-600 text-white px-6 py-3 rounded-xl font-bold hover:shadow-lg transition"
-          >
-            Kembali ke Beranda
-          </button>
-        </div>
-      </div>
-    );
-  }
+  // ⚠️ Ketika sukses = true → redirect ke URL success
+  useEffect(() => {
+    if (success) {
+      router.push("/premium/success"); // ganti sesuai kebutuhan
+    }
+  }, [success, router]);
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-green-50 to-white py-20">
       <div className="max-w-4xl mx-auto px-6">
+
         {/* Header */}
         <div className="flex items-center gap-3 mb-8">
           <button
@@ -74,10 +63,11 @@ export default function PremiumPaymentPage() {
           <h1 className="text-3xl font-bold text-gray-900">Pembayaran Premium</h1>
         </div>
 
-        {/* Content */}
         <div className="grid lg:grid-cols-3 gap-8">
-          {/* Left - Payment Options */}
+
+          {/* Left */}
           <div className="lg:col-span-2 bg-white p-8 rounded-3xl shadow-xl border border-green-100">
+
             <h2 className="text-xl font-bold text-gray-900 mb-4">Pilih Metode Pembayaran</h2>
 
             <div className="space-y-4">
@@ -112,8 +102,9 @@ export default function PremiumPaymentPage() {
             </div>
           </div>
 
-          {/* Right - Plan Summary */}
+          {/* Right */}
           <div className="bg-white p-8 rounded-3xl shadow-xl border border-green-100">
+
             <h2 className="text-xl font-bold text-gray-900 mb-6">Ringkasan Pembayaran</h2>
 
             <div className="border-b border-gray-200 pb-4 mb-4">
@@ -151,6 +142,7 @@ export default function PremiumPaymentPage() {
             <p className="text-xs text-gray-500 text-center mt-4">
               Dengan melanjutkan, Anda menyetujui <span className="underline">Syarat & Ketentuan</span>.
             </p>
+
           </div>
         </div>
       </div>
