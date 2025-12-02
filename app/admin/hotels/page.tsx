@@ -1,15 +1,17 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import {
   Plus,
   Edit,
   Trash2,
   Search,
+  ArrowLeft,
   Star,
   X,
   Save,
-  ArrowLeft,
+  Eye,
 } from "lucide-react";
 
 interface HotelItem {
@@ -25,7 +27,12 @@ interface HotelItem {
 }
 
 export default function HotelAdmin() {
-  // ===================== DATA =====================
+  const router = useRouter();
+  const params = useSearchParams();
+
+  const modal = params.get("modal"); // create | view | edit | delete
+  const hotelId = params.get("id");
+
   const [hotels, setHotels] = useState<HotelItem[]>([
     {
       id: 1,
@@ -62,26 +69,7 @@ export default function HotelAdmin() {
     },
   ]);
 
-  // ===================== MODAL CONTROL =====================
-  const [modalType, setModalType] = useState<
-    "create" | "edit" | "delete" | null
-  >(null);
-  const [showModal, setShowModal] = useState(false);
-
-  // Sync modal URL
-  const openModalWithUrl = (query: string) => {
-    window.history.pushState({}, "", `/admin/hotel?${query}`);
-    setShowModal(true);
-  };
-
-  const closeModal = () => {
-    window.history.pushState({}, "", "/admin/hotel");
-    setShowModal(false);
-    setModalType(null);
-  };
-
-  // ===================== FORM STATE =====================
-  const emptyForm: HotelItem = {
+  const [formData, setFormData] = useState<HotelItem>({
     id: 0,
     name: "",
     type: "",
@@ -91,200 +79,159 @@ export default function HotelAdmin() {
     facilities: [],
     description: "",
     image: "🏨",
-  };
+  });
 
-  const [formData, setFormData] = useState<HotelItem>(emptyForm);
-  const [deleteId, setDeleteId] = useState<number | null>(null);
-
-  // ===================== OPTIONS =====================
-  const types = ["Hotel", "Resort", "Guest House", "Villa", "Homestay", "Cottage"];
-  const locations = ["Parapat", "Samosir", "Tuktuk", "Tomok", "Balige", "Siantar"];
-  const availableFacilities = [
+  const types = ["Hotel", "Resort", "Guest House", "Villa", "Homestay"];
+  const locations = ["Parapat", "Samosir", "Tuktuk", "Tomok", "Balige"];
+  const facilitiesList = [
     "WiFi",
     "Restaurant",
     "Pool",
     "Spa",
     "Breakfast",
     "Parking",
-    "Gym",
-    "Beach Access",
   ];
 
-  const [searchQuery, setSearchQuery] = useState("");
+  // === OPEN MODALS BY SETTING URL ===
+  const openCreate = () => router.push("?modal=create");
+  const openView = (id: number) => router.push(`?modal=view&id=${id}`);
+  const openEdit = (id: number) => router.push(`?modal=edit&id=${id}`);
+  const openDelete = (id: number) => router.push(`?modal=delete&id=${id}`);
 
-  // ===================== ACTION HANDLERS =====================
+  const closeModal = () => router.push("/admin/hotels");
 
-  const handleCreate = () => {
-    setModalType("create");
-    setFormData(emptyForm);
-    openModalWithUrl("modal=create");
-  };
-
-  const handleEdit = (hotel: HotelItem) => {
-    setModalType("edit");
-    setFormData(hotel);
-    openModalWithUrl(`modal=edit&id=${hotel.id}`);
-  };
-
-  const handleDelete = (id: number) => {
-    setModalType("delete");
-    setDeleteId(id);
-    openModalWithUrl(`modal=delete&id=${id}`);
-  };
-
-  const handleSave = () => {
-    if (!formData.name || !formData.type || !formData.location) {
-      alert("Mohon lengkapi semua field!");
-      return;
-    }
-
-    if (modalType === "edit") {
-      setHotels(hotels.map(h => (h.id === formData.id ? formData : h)));
-    } else {
-      const newHotel = { ...formData, id: Date.now() };
-      setHotels([...hotels, newHotel]);
-    }
-
-    closeModal();
-  };
-
-  const confirmDelete = () => {
-    if (!deleteId) return;
-    setHotels(hotels.filter(h => h.id !== deleteId));
-    closeModal();
-  };
-
-  const toggleFacility = (facility: string) => {
-    const updatedFacilities = formData.facilities.includes(facility)
-      ? formData.facilities.filter(f => f !== facility)
-      : [...formData.facilities, facility];
-
-    setFormData({ ...formData, facilities: updatedFacilities });
-  };
-
-  // ===================== AUTO OPEN MODAL FROM URL =====================
+  // === LOAD DATA WHEN URL CHANGES ===
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const modal = params.get("modal");
-    const id = params.get("id");
-
-    if (modal === "create") {
-      setModalType("create");
-      setFormData(emptyForm);
-      setShowModal(true);
+    if (hotelId) {
+      const h = hotels.find((x) => x.id === Number(hotelId));
+      if (h) setFormData(h);
+    } else {
+      setFormData({
+        id: 0,
+        name: "",
+        type: "",
+        location: "",
+        pricePerNight: 0,
+        rating: 0,
+        facilities: [],
+        description: "",
+        image: "🏨",
+      });
     }
+  }, [hotelId]);
 
-    if (modal === "edit" && id) {
-      const found = hotels.find(h => h.id === Number(id));
-      if (found) {
-        setModalType("edit");
-        setFormData(found);
-        setShowModal(true);
-      }
+  const saveHotel = () => {
+    if (modal === "edit") {
+      setHotels((prev) =>
+        prev.map((h) => (h.id === formData.id ? formData : h))
+      );
+    } else {
+      setHotels((prev) => [...prev, { ...formData, id: Date.now() }]);
     }
+    closeModal();
+  };
 
-    if (modal === "delete" && id) {
-      setModalType("delete");
-      setDeleteId(Number(id));
-      setShowModal(true);
-    }
-  }, []);
+  const deleteHotel = () => {
+    setHotels((prev) => prev.filter((h) => h.id !== Number(hotelId)));
+    closeModal();
+  };
 
-  // ===================== FILTER =====================
-  const filteredHotels = hotels.filter(h =>
-    h.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    h.type.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    h.location.toLowerCase().includes(searchQuery.toLowerCase())
+  // SEARCH
+  const [search, setSearch] = useState("");
+  const filtered = hotels.filter(
+    (h) =>
+      h.name.toLowerCase().includes(search.toLowerCase()) ||
+      h.location.toLowerCase().includes(search.toLowerCase()) ||
+      h.type.toLowerCase().includes(search.toLowerCase())
   );
-
-  // =====================================================================
-  // ========================== UI START ================================
-  // =====================================================================
 
   return (
     <div className="min-h-screen bg-gray-50">
       {/* HEADER */}
-      <div className="bg-white border-b border-gray-200 px-8 py-4 flex justify-between items-center">
-        <div className="flex gap-4 items-center">
+      <div className="bg-white border-b px-8 py-4 flex items-center justify-between">
+        <div className="flex items-center gap-4">
           <button
-            onClick={() => (window.location.href = "/admin/dashboard")}
+            onClick={() => router.push("/admin/dashboard")}
             className="p-2 hover:bg-gray-100 rounded-lg"
           >
-            <ArrowLeft className="w-5 h-5" />
+            <ArrowLeft />
           </button>
           <div>
             <h1 className="text-2xl font-bold">Manajemen Hotel</h1>
-            <p className="text-gray-600 text-sm">Kelola penginapan di Danau Toba</p>
+            <p className="text-gray-500">Kelola hotel di Danau Toba</p>
           </div>
         </div>
 
         <button
-          onClick={handleCreate}
-          className="flex items-center gap-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white px-6 py-3 rounded-xl font-semibold hover:shadow-lg"
+          onClick={openCreate}
+          className="px-5 py-3 rounded-xl bg-purple-600 text-white flex items-center gap-2"
         >
-          <Plus className="w-5 h-5" />
-          Tambah Hotel
+          <Plus /> Tambah Hotel
         </button>
       </div>
 
       {/* SEARCH */}
       <div className="p-8">
-        <div className="bg-white p-6 rounded-2xl shadow-lg mb-6">
+        <div className="bg-white p-6 rounded-2xl shadow">
           <div className="relative">
-            <Search className="absolute left-4 top-3 text-gray-400 w-5 h-5" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
             <input
-              className="w-full pl-12 pr-4 py-3 border-2 border-gray-200 rounded-xl"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
               placeholder="Cari hotel..."
-              value={searchQuery}
-              onChange={e => setSearchQuery(e.target.value)}
+              className="w-full pl-10 py-3 border rounded-xl"
             />
           </div>
         </div>
 
         {/* TABLE */}
-        <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
+        <div className="mt-6 bg-white rounded-2xl shadow overflow-hidden">
           <table className="w-full">
-            <thead className="bg-gradient-to-r from-purple-600 to-pink-600 text-white">
+            <thead className="bg-purple-600 text-white">
               <tr>
-                <th className="px-6 py-4">Icon</th>
-                <th className="px-6 py-4">Nama</th>
-                <th className="px-6 py-4">Tipe</th>
-                <th className="px-6 py-4">Lokasi</th>
-                <th className="px-6 py-4">Harga</th>
-                <th className="px-6 py-4">Rating</th>
-                <th className="px-6 py-4">Aksi</th>
+                <th className="p-4 text-left">Icon</th>
+                <th className="p-4 text-left">Nama</th>
+                <th className="p-4 text-left">Tipe</th>
+                <th className="p-4 text-left">Lokasi</th>
+                <th className="p-4 text-left">Harga</th>
+                <th className="p-4 text-left">Rating</th>
+                <th className="p-4 text-left">Aksi</th>
               </tr>
             </thead>
 
-            <tbody className="divide-y divide-gray-200">
-              {filteredHotels.map(hotel => (
-                <tr key={hotel.id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 text-3xl">{hotel.image}</td>
-                  <td className="px-6 py-4">
-                    <div className="font-semibold">{hotel.name}</div>
-                    <div className="text-sm text-gray-600">{hotel.description}</div>
+            <tbody>
+              {filtered.map((h) => (
+                <tr
+                  key={h.id}
+                  className="border-b hover:bg-gray-50 transition"
+                >
+                  <td className="p-4 text-3xl">{h.image}</td>
+                  <td className="p-4">{h.name}</td>
+                  <td className="p-4">{h.type}</td>
+                  <td className="p-4">{h.location}</td>
+                  <td className="p-4">Rp {h.pricePerNight.toLocaleString()}</td>
+                  <td className="p-4 flex items-center gap-1">
+                    <Star className="text-yellow-400 fill-yellow-400" />
+                    {h.rating}
                   </td>
-                  <td className="px-6 py-4">{hotel.type}</td>
-                  <td className="px-6 py-4">{hotel.location}</td>
-                  <td className="px-6 py-4 font-semibold">
-                    Rp {hotel.pricePerNight.toLocaleString()}
-                  </td>
-                  <td className="px-6 py-4 flex items-center gap-1">
-                    <Star className="w-4 h-4 text-yellow-400 fill-yellow-400" />
-                    {hotel.rating}
-                  </td>
-                  <td className="px-6 py-4 flex gap-2">
+                  <td className="p-4 gap-2">
                     <button
-                      onClick={() => handleEdit(hotel)}
-                      className="p-2 bg-blue-100 text-blue-600 rounded-lg"
+                      onClick={() => openView(h.id)}
+                      className="p-2 mx-1 bg-green-100 hover:bg-green-200 text-green-600 rounded-lg"
                     >
-                      <Edit className="w-4 h-4" />
+                      <Eye />
                     </button>
                     <button
-                      onClick={() => handleDelete(hotel.id)}
-                      className="p-2 bg-red-100 text-red-600 rounded-lg"
+                      onClick={() => openEdit(h.id)}
+                      className="p-2 mx-1 bg-blue-100 hover:bg-blue-200 text-blue-600 rounded-lg"
                     >
-                      <Trash2 className="w-4 h-4" />
+                      <Edit />
+                    </button>
+                    <button
+                      onClick={() => openDelete(h.id)}
+                      className="p-2 mx-1 bg-red-100 hover:bg-red-200 text-red-600 rounded-lg"
+                    >
+                      <Trash2 />
                     </button>
                   </td>
                 </tr>
@@ -294,150 +241,166 @@ export default function HotelAdmin() {
         </div>
       </div>
 
-      {/* ===================== MODALS ===================== */}
+      {/* MODAL */}
+      {modal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white w-full max-w-xl rounded-2xl shadow-xl p-6 relative">
+            <button
+              onClick={closeModal}
+              className="absolute right-4 top-4 text-gray-600 hover:text-black"
+            >
+              <X />
+            </button>
 
-      {/* CREATE / EDIT MODAL */}
-      {showModal && (modalType === "create" || modalType === "edit") && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-3xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-            <div className="p-6 border-b flex justify-between items-center">
-              <h3 className="text-xl font-semibold">
-                {modalType === "create" ? "Tambah Hotel" : "Edit Hotel"}
-              </h3>
-              <button onClick={closeModal}>
-                <X className="w-6 h-6" />
-              </button>
-            </div>
+            {/* ==== VIEW HOTEL ==== */}
+            {modal === "view" && (
+              <>
+                <h2 className="text-2xl font-bold mb-4">Detail Hotel</h2>
+                <p className="text-6xl mb-4">{formData.image}</p>
+                <p className="font-bold text-xl">{formData.name}</p>
+                <p className="text-gray-600 mb-2">{formData.type}</p>
+                <p className="mb-2">Lokasi: {formData.location}</p>
+                <p className="mb-2">
+                  Harga: Rp {formData.pricePerNight.toLocaleString()}
+                </p>
+                <p className="mb-2">Rating: ⭐ {formData.rating}</p>
+                <p className="mb-4">
+                  Fasilitas: {formData.facilities.join(", ")}
+                </p>
+                <p className="text-gray-800">{formData.description}</p>
+              </>
+            )}
 
-            {/* FORM */}
-            <div className="p-6 space-y-6">
-              <div className="grid md:grid-cols-2 gap-6">
-                <input
-                  className="border px-4 py-3 rounded-xl w-full"
-                  placeholder="Nama Hotel"
-                  value={formData.name}
-                  onChange={e => setFormData({ ...formData, name: e.target.value })}
-                />
-
-                <select
-                  className="border px-4 py-3 rounded-xl w-full"
-                  value={formData.type}
-                  onChange={e => setFormData({ ...formData, type: e.target.value })}
-                >
-                  <option value="">Pilih Tipe</option>
-                  {types.map(t => (
-                    <option key={t}>{t}</option>
-                  ))}
-                </select>
-
-                <select
-                  className="border px-4 py-3 rounded-xl w-full"
-                  value={formData.location}
-                  onChange={e => setFormData({ ...formData, location: e.target.value })}
-                >
-                  <option value="">Pilih Lokasi</option>
-                  {locations.map(l => (
-                    <option key={l}>{l}</option>
-                  ))}
-                </select>
-
-                <input
-                  type="number"
-                className="border px-4 py-3 rounded-xl"
-                  placeholder="Harga"
-                  value={formData.pricePerNight}
-                  onChange={e =>
-                    setFormData({
-                      ...formData,
-                      pricePerNight: parseInt(e.target.value) || 0,
-                    })
-                  }
-                />
-
-                <input
-                  type="number"
-                  step="0.1"
-                  className="border px-4 py-3 rounded-xl"
-                  placeholder="Rating (1-5)"
-                  value={formData.rating}
-                  onChange={e =>
-                    setFormData({ ...formData, rating: parseFloat(e.target.value) })
-                  }
-                />
-              </div>
-
-              {/* FACILITIES */}
-              <div>
-                <label className="font-semibold">Fasilitas</label>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mt-2">
-                  {availableFacilities.map(fac => (
-                    <button
-                      key={fac}
-                      type="button"
-                      className={`px-4 py-2 rounded-lg text-sm ${
-                        formData.facilities.includes(fac)
-                          ? "bg-purple-600 text-white"
-                          : "bg-gray-100"
-                      }`}
-                      onClick={() => toggleFacility(fac)}
-                    >
-                      {fac}
-                    </button>
-                  ))}
+            {/* ==== DELETE CONFIRM ==== */}
+            {modal === "delete" && (
+              <div className="text-center">
+                <h2 className="text-xl font-bold mb-4">
+                  Hapus Hotel "{formData.name}"?
+                </h2>
+                <p className="text-gray-600 mb-6">
+                  Tindakan ini tidak dapat dibatalkan.
+                </p>
+                <div className="flex gap-3">
+                  <button
+                    onClick={closeModal}
+                    className="flex-1 py-2 border rounded-xl"
+                  >
+                    Batal
+                  </button>
+                  <button
+                    onClick={deleteHotel}
+                    className="flex-1 py-2 bg-red-600 text-white rounded-xl"
+                  >
+                    Hapus
+                  </button>
                 </div>
               </div>
+            )}
 
-              <textarea
-                rows={4}
-                className="border px-4 py-3 rounded-xl w-full"
-                placeholder="Deskripsi..."
-                value={formData.description}
-                onChange={e =>
-                  setFormData({ ...formData, description: e.target.value })
-                }
-              />
+            {/* ==== CREATE & EDIT ==== */}
+            {(modal === "create" || modal === "edit") && (
+              <>
+                <h2 className="text-2xl font-bold mb-4">
+                  {modal === "create" ? "Tambah Hotel" : "Edit Hotel"}
+                </h2>
 
-              <div className="flex gap-4">
-                <button
-                  onClick={closeModal}
-                  className="flex-1 border py-3 rounded-xl"
-                >
-                  Batal
-                </button>
-                <button
-                  onClick={handleSave}
-                  className="flex-1 bg-purple-600 text-white py-3 rounded-xl"
-                >
-                  <Save className="w-5 h-5 inline-block mr-2" />
-                  Simpan
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+                {/* Form */}
+                <div className="grid grid-cols-2 gap-4">
+                  <input
+                    value={formData.name}
+                    onChange={(e) =>
+                      setFormData({ ...formData, name: e.target.value })
+                    }
+                    placeholder="Nama Hotel"
+                    className="border p-3 rounded-xl"
+                  />
 
-      {/* DELETE MODAL */}
-      {showModal && modalType === "delete" && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white p-6 rounded-2xl max-w-md text-center space-y-4">
-            <h3 className="text-xl font-bold">Hapus Hotel?</h3>
-            <p className="text-gray-600">Hotel akan dihapus secara permanen.</p>
+                  <select
+                    value={formData.type}
+                    onChange={(e) =>
+                      setFormData({ ...formData, type: e.target.value })
+                    }
+                    className="border p-3 rounded-xl"
+                  >
+                    <option value="">Pilih Tipe</option>
+                    {types.map((x) => (
+                      <option key={x}>{x}</option>
+                    ))}
+                  </select>
 
-            <div className="flex gap-4 mt-6">
-              <button
-                onClick={closeModal}
-                className="flex-1 border py-3 rounded-xl"
-              >
-                Batal
-              </button>
-              <button
-                onClick={confirmDelete}
-                className="flex-1 bg-red-600 text-white py-3 rounded-xl"
-              >
-                Hapus
-              </button>
-            </div>
+                  <select
+                    value={formData.location}
+                    onChange={(e) =>
+                      setFormData({ ...formData, location: e.target.value })
+                    }
+                    className="border p-3 rounded-xl"
+                  >
+                    <option value="">Pilih Lokasi</option>
+                    {locations.map((x) => (
+                      <option key={x}>{x}</option>
+                    ))}
+                  </select>
+
+                  <input
+                    type="number"
+                    value={formData.pricePerNight}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        pricePerNight: parseInt(e.target.value),
+                      })
+                    }
+                    placeholder="Harga / malam"
+                    className="border p-3 rounded-xl"
+                  />
+
+                  <input
+                    type="number"
+                    value={formData.rating}
+                    step="0.1"
+                    min={0}
+                    max={5}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        rating: parseFloat(e.target.value),
+                      })
+                    }
+                    placeholder="Rating"
+                    className="border p-3 rounded-xl"
+                  />
+                </div>
+
+                <textarea
+                  value={formData.description}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      description: e.target.value,
+                    })
+                  }
+                  rows={3}
+                  placeholder="Deskripsi hotel..."
+                  className="w-full mt-4 p-3 border rounded-xl"
+                />
+
+                <div className="flex gap-4 mt-6">
+                  <button
+                    onClick={closeModal}
+                    className="flex-1 py-2 border rounded-xl"
+                  >
+                    Batal
+                  </button>
+
+                  <button
+                    onClick={saveHotel}
+                    className="flex-1 py-2 bg-purple-600 text-white rounded-xl flex items-center justify-center gap-2"
+                  >
+                    <Save /> Simpan
+                  </button>
+                </div>
+              </>
+            )}
           </div>
         </div>
       )}
